@@ -1,6 +1,6 @@
-package model
+package domain
 
-import "gorm.io/gorm"
+import "time"
 
 const (
 	ItemTypeOwn         = "OWN"
@@ -14,8 +14,8 @@ const (
 )
 
 type Item struct {
-	gorm.Model
-	Code        string `gorm:"unique"`
+	ID          uint
+	Code        string
 	Title       string
 	Description string
 	Price       int
@@ -25,10 +25,14 @@ type Item struct {
 	LeaderLevel string
 	Status      string
 	Photos      []Photo
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type Photo struct {
-	gorm.Model
-	Path   string
-	ItemID uint
+	ID        uint
+	Path      string
+	ItemID    uint
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

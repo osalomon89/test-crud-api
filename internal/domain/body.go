@@ -1,6 +1,4 @@
-package httpmodel
-
-import "github.com/osalomon89/test-crud-api/internal/model"
+package domain
 
 type CreateItemBody struct {
 	Code        string   `json:"code" binding:"required"`
@@ -17,8 +15,8 @@ type CreateItemBody struct {
 
 func (p CreateItemBody) GetStatus() string {
 	if p.Stock > 0 {
-		return model.StatusActive
+		return StatusActive
 	}
 
-	return model.StatusInactive
+	return StatusInactive
 }

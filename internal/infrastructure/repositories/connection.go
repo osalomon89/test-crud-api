@@ -1,10 +1,9 @@
-package repository
+package repositories
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/osalomon89/test-crud-api/internal/config"
-	"github.com/osalomon89/test-crud-api/internal/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -13,28 +12,31 @@ var db *gorm.DB //nolint:gochecknoglobals
 
 func GetConnectionDB() (*gorm.DB, error) {
 	var err error
+	env := os.Getenv("GO_ENVIRONMENT")
 
 	if db == nil {
-		db, err = gorm.Open(mysql.Open(config.DBConnectionURL()), &gorm.Config{})
+		if err := load(env); err != nil {
+			return nil, fmt.Errorf("### CONFIGS ERROR: %w", err)
+		}
+
+		db, err = gorm.Open(mysql.Open(dbConnectionURL()), &gorm.Config{})
 		if err != nil {
 			fmt.Printf("########## DB ERROR: " + err.Error() + " #############")
-
 			return nil, fmt.Errorf("### DB ERROR: %w", err)
+		}
+	}
+
+	if env != productionEnv {
+		if err := migrate(db); err != nil {
+			return nil, err
 		}
 	}
 
 	return db, nil
 }
 
-func Migrate(db *gorm.DB) error {
-	err := db.SetupJoinTable(&model.User{}, "Items", &model.UserItem{})
-	if err != nil {
-		fmt.Printf("########## JOIN ERROR: " + err.Error() + " #############")
-
-		return fmt.Errorf("### JOIN ERROR: %w", err)
-	}
-
-	err = db.AutoMigrate(model.User{}, model.Item{}, model.Photo{})
+func migrate(db *gorm.DB) error {
+	err := db.AutoMigrate(Item{}, Photo{})
 	if err != nil {
 		fmt.Printf("########## MIGRATE ERROR: " + err.Error() + " #############")
 

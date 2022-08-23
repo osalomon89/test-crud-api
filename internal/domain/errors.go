@@ -1,8 +1,6 @@
-package itemerrors
+package domain
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type ItemError struct {
 	Message string
