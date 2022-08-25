@@ -2,15 +2,19 @@ package server
 
 import (
 	"github.com/mercadolibre/fury_go-platform/pkg/fury"
-	"github.com/osalomon89/test-crud-api/internal/application/ports"
 )
+
+type HTTPServer interface {
+	SetupRouter()
+	Run() error
+}
 
 type httpServer struct {
 	ItemHandler ItemHandler
 	App         *fury.Application
 }
 
-func NewHTTPServer(app *fury.Application, handler ItemHandler) ports.HTTPServer {
+func NewHTTPServer(app *fury.Application, handler ItemHandler) HTTPServer {
 	return &httpServer{
 		ItemHandler: handler,
 		App:         app,

@@ -36,3 +36,12 @@ type Photo struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+func (item *Item) SetStatus() {
+	if item.Stock > 0 {
+		item.Status = StatusActive
+		return
+	}
+
+	item.Status = StatusInactive
+}

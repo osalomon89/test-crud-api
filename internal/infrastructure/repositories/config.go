@@ -5,7 +5,7 @@ import (
 	"os"
 
 	//Autoload the env
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/joho/godotenv"
 	"github.com/mercadolibre/fury_go-toolkit-config/pkg/config"
 	"github.com/mercadolibre/go-meli-toolkit/gomelipass"
 )
@@ -47,6 +47,10 @@ func loadENVConfigs() {
 	scope := os.Getenv("SCOPE")
 
 	if scope == "" {
+		if err := godotenv.Load("../../.env"); err != nil {
+			panic(err.Error())
+		}
+
 		environment = map[string]string{
 			dbHost:        os.Getenv(dbHost),
 			dbUser:        os.Getenv(dbUser),

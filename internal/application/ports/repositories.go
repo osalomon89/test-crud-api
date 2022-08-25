@@ -8,6 +8,6 @@ import (
 
 //go:generate mockgen -destination=../utils/test/mocks/item_repository_mock.go -package=mocks -source=./item_repository.go
 type ItemRepository interface {
-	CreateItem(ctx context.Context, a *domain.Item) error
+	SaveItem(ctx context.Context, a *domain.Item) error
 	GetItemByID(ctx context.Context, id uint) (*domain.Item, error)
 }

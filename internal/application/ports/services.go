@@ -7,6 +7,6 @@ import (
 )
 
 type ItemService interface {
-	CreateItem(ctx context.Context, itemBody domain.CreateItemBody) (*domain.Item, error)
+	CreateItem(ctx context.Context, item domain.Item) (*domain.Item, error)
 	GetItemByID(ctx context.Context, itemID uint) (*domain.Item, error)
 }

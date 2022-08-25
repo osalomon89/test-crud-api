@@ -1,4 +1,4 @@
-package server
+package dto
 
 import (
 	"time"
@@ -28,7 +28,7 @@ type ItemResponse struct {
 	UpdatedAt   time.Time
 }
 
-func createItemResponse(item *domain.Item) *ItemResponse {
+func CreateItemResponse(item *domain.Item) *ItemResponse {
 	var photos []string
 	for _, photo := range item.Photos {
 		photos = append(photos, photo.Path)
