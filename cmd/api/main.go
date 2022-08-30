@@ -5,7 +5,7 @@ import (
 
 	"github.com/mercadolibre/fury_go-platform/pkg/fury"
 	"github.com/osalomon89/test-crud-api/internal/application/services"
-	"github.com/osalomon89/test-crud-api/internal/infrastructure/repositories"
+	"github.com/osalomon89/test-crud-api/internal/infrastructure/repositories/mysql"
 	server "github.com/osalomon89/test-crud-api/internal/infrastructure/server"
 )
 
@@ -28,12 +28,12 @@ func run() error {
 }
 
 func newHandlers() server.ItemHandler {
-	conn, err := repositories.GetConnectionDB()
+	conn, err := mysql.GetConnectionDB()
 	if err != nil {
 		panic("error connecting to DB: " + err.Error())
 	}
 
-	itemRepository, err := repositories.NewItemRepository(conn)
+	itemRepository, err := mysql.NewItemRepository(conn)
 	if err != nil {
 		panic("error creating item repository: " + err.Error())
 	}
