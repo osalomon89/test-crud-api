@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/osalomon89/test-crud-api/internal/application/ports"
-	"github.com/osalomon89/test-crud-api/internal/domain"
+	"github.com/osalomon89/test-crud-api/internal/core/domain"
+	"github.com/osalomon89/test-crud-api/internal/core/ports"
 	marketcontext "github.com/osalomon89/test-crud-api/pkg/context"
 )
 
@@ -13,8 +13,12 @@ type itemService struct {
 	itemRepository ports.ItemRepository
 }
 
-func NewItemService(itemRepository ports.ItemRepository) ports.ItemService {
-	return &itemService{itemRepository: itemRepository}
+func NewItemService(itemRepository ports.ItemRepository) (ports.ItemService, error) {
+	if itemRepository == nil {
+		return nil, fmt.Errorf("repository cannot be nil")
+	}
+
+	return &itemService{itemRepository: itemRepository}, nil
 }
 
 func (svc *itemService) CreateItem(ctx context.Context,

@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/mercadolibre/fury_go-platform/pkg/fury"
+	"github.com/osalomon89/test-crud-api/internal/infrastructure/server/handler"
 )
 
 type HTTPServer interface {
@@ -10,11 +11,11 @@ type HTTPServer interface {
 }
 
 type httpServer struct {
-	ItemHandler ItemHandler
+	ItemHandler handler.ItemHandler
 	App         *fury.Application
 }
 
-func NewHTTPServer(app *fury.Application, handler ItemHandler) HTTPServer {
+func NewHTTPServer(app *fury.Application, handler handler.ItemHandler) HTTPServer {
 	return &httpServer{
 		ItemHandler: handler,
 		App:         app,

@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/osalomon89/test-crud-api/internal/domain"
+import "github.com/osalomon89/test-crud-api/internal/core/domain"
 
 type ItemBody struct {
 	Code        string   `json:"code" binding:"required"`

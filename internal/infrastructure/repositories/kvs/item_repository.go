@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/mercadolibre/go-meli-toolkit/gokvsclient"
-	"github.com/osalomon89/test-crud-api/internal/application/ports"
-	"github.com/osalomon89/test-crud-api/internal/domain"
+	"github.com/osalomon89/test-crud-api/internal/core/domain"
+	"github.com/osalomon89/test-crud-api/internal/core/ports"
 )
 
 type Item struct {

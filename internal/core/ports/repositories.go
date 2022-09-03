@@ -3,7 +3,8 @@ package ports
 import (
 	"context"
 
-	"github.com/osalomon89/test-crud-api/internal/domain"
+	_ "github.com/golang/mock/mockgen/model"
+	"github.com/osalomon89/test-crud-api/internal/core/domain"
 )
 
 //go:generate mockgen -source=./repositories.go -destination=../test/mocks/item_repository_mock.go -package=mocks

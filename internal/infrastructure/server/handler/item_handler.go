@@ -1,15 +1,16 @@
-package server
+package handler
 
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/mercadolibre/fury_go-core/pkg/web"
-	"github.com/osalomon89/test-crud-api/internal/application/ports"
-	"github.com/osalomon89/test-crud-api/internal/domain"
-	"github.com/osalomon89/test-crud-api/internal/infrastructure/server/dto"
+	"github.com/osalomon89/test-crud-api/internal/core/domain"
+	"github.com/osalomon89/test-crud-api/internal/core/ports"
+	"github.com/osalomon89/test-crud-api/internal/infrastructure/server/handler/dto"
 	marketcontext "github.com/osalomon89/test-crud-api/pkg/context"
 )
 
@@ -22,10 +23,14 @@ type itemHandler struct {
 	itemService ports.ItemService
 }
 
-func NewItemHandler(itemService ports.ItemService) ItemHandler {
+func NewItemHandler(itemService ports.ItemService) (ItemHandler, error) {
+	if itemService == nil {
+		return nil, fmt.Errorf("service cannot be nil")
+	}
+
 	return &itemHandler{
 		itemService: itemService,
-	}
+	}, nil
 }
 
 func (h *itemHandler) CreateItem(res http.ResponseWriter, req *http.Request) error {

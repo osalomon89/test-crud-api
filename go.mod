@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gofrs/uuid v4.2.0+incompatible
+	github.com/golang/mock v1.6.0
 	github.com/joho/godotenv v1.4.0
 	github.com/mercadolibre/fury_go-core v1.4.1
 	github.com/mercadolibre/fury_go-platform v1.4.0

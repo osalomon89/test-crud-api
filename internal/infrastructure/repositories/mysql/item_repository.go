@@ -10,8 +10,8 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"github.com/osalomon89/test-crud-api/internal/application/ports"
-	"github.com/osalomon89/test-crud-api/internal/domain"
+	"github.com/osalomon89/test-crud-api/internal/core/domain"
+	"github.com/osalomon89/test-crud-api/internal/core/ports"
 	marketcontext "github.com/osalomon89/test-crud-api/pkg/context"
 )
 
