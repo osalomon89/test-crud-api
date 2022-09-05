@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/osalomon89/test-crud-api/internal/domain"
+	"github.com/osalomon89/test-crud-api/internal/core/domain"
 )
 
 type Response struct {
