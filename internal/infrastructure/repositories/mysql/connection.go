@@ -5,6 +5,9 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -27,7 +30,7 @@ func GetConnectionDB() (*sqlx.DB, error) {
 	}
 
 	if env != productionEnv {
-		if err := migrate(db); err != nil {
+		if err := autoMigrate(db); err != nil {
 			return nil, err
 		}
 	}
@@ -35,46 +38,26 @@ func GetConnectionDB() (*sqlx.DB, error) {
 	return db, nil
 }
 
-func migrate(db *sqlx.DB) error {
-	var itemsSchema = `
-	CREATE TABLE IF NOT EXISTS items (
-		id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-		code varchar(191) DEFAULT NULL,
-		title longtext,
-		description longtext,
-		price bigint(20) DEFAULT NULL,
-		stock bigint(20) DEFAULT NULL,
-		item_type longtext,
-		leader tinyint(1) DEFAULT NULL,
-		leader_level longtext,
-		status longtext,
-		created_at datetime(3) DEFAULT NULL,
-		updated_at datetime(3) DEFAULT NULL,
-		PRIMARY KEY (id),
-		UNIQUE KEY code (code)
-	  );`
-
-	_, err := db.Exec(itemsSchema)
+func autoMigrate(db *sqlx.DB) error {
+	driver, err := mysql.WithInstance(db.DB, &mysql.Config{})
 	if err != nil {
 		fmt.Printf("########## DB ERROR: " + err.Error() + " #############")
-		return fmt.Errorf("### MIGRATION ERROR: %w", err)
+		return fmt.Errorf("error instantiating migration: %w", err)
 	}
 
-	var photosSchema = `CREATE TABLE IF NOT EXISTS photos (
-		id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-		path longtext,
-		item_id bigint(20) unsigned DEFAULT NULL,
-		created_at datetime(3) DEFAULT NULL,
-		updated_at datetime(3) DEFAULT NULL,
-		PRIMARY KEY (id),
-		KEY fk_items_photos (item_id),
-		CONSTRAINT fk_items_photos FOREIGN KEY (item_id) REFERENCES items (id)
-	  );`
+	dbMigration, err := migrate.NewWithDatabaseInstance(
+		"file://../../db/migration",
+		"mysql",
+		driver,
+	)
 
-	_, err = db.Exec(photosSchema)
 	if err != nil {
 		fmt.Printf("########## DB ERROR: " + err.Error() + " #############")
-		return fmt.Errorf("### MIGRATION ERROR: %w", err)
+		return fmt.Errorf("error instantiating migration: %w", err)
+	}
+
+	if err := dbMigration.Up(); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("error executing migration: %w", err)
 	}
 
 	return nil

@@ -4,10 +4,8 @@ import (
 	"log"
 
 	"github.com/mercadolibre/fury_go-platform/pkg/fury"
-	"github.com/osalomon89/test-crud-api/internal/core/services"
 	"github.com/osalomon89/test-crud-api/internal/infrastructure/repositories/mysql"
 	server "github.com/osalomon89/test-crud-api/internal/infrastructure/server"
-	"github.com/osalomon89/test-crud-api/internal/infrastructure/server/handler"
 )
 
 func main() {
@@ -22,32 +20,20 @@ func run() error {
 		return err
 	}
 
-	furyHandler := server.NewHTTPServer(app, newHandlers())
-	furyHandler.SetupRouter()
-
-	return furyHandler.Run()
-}
-
-func newHandlers() handler.ItemHandler {
 	conn, err := mysql.GetConnectionDB()
 	if err != nil {
 		panic("error connecting to DB: " + err.Error())
 	}
+	defer conn.Close()
 
-	itemRepository, err := mysql.NewItemRepository(conn)
+	serverReady := make(chan bool)
+	httpServer, err := server.NewHTTPServer(app, conn, serverReady)
 	if err != nil {
-		panic("error creating item repository: " + err.Error())
+		panic("error creating server: " + err.Error())
 	}
 
-	itemService, err := services.NewItemService(itemRepository)
-	if err != nil {
-		panic("error creating item service: " + err.Error())
-	}
+	httpServer.SetupRouter()
+	httpServer.Run()
 
-	itemHandler, err := handler.NewItemHandler(itemService)
-	if err != nil {
-		panic("error creating item handler: " + err.Error())
-	}
-
-	return itemHandler
+	return nil
 }
