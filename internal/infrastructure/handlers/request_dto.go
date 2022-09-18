@@ -1,4 +1,4 @@
-package dto
+package handlers
 
 import "github.com/osalomon89/test-crud-api/internal/core/domain"
 
@@ -14,7 +14,7 @@ type ItemBody struct {
 	Photos      []string `json:"photos" binding:"required"`
 }
 
-func (itemBody ItemBody) ToItemDomain() domain.Item {
+func (itemBody ItemBody) toItemDomain() domain.Item {
 	var photos []domain.Photo
 
 	for _, path := range itemBody.Photos {

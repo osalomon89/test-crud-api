@@ -26,7 +26,6 @@ type Item struct {
 	Leader      bool
 	LeaderLevel string `db:"leader_level"`
 	Status      string
-	Photos      []Photo
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
 }
@@ -82,9 +81,10 @@ func (repo *itemRepository) SaveItem(ctx context.Context, item *domain.Item) err
 		return fmt.Errorf("error saving item: %w", err)
 	}
 
-	err = repo.savePhotos(tx, uint(id), item.Photos)
-	if err != nil {
-		return fmt.Errorf("error saving photos: %w", err)
+	if len(item.Photos) > 0 {
+		if err := repo.savePhotos(tx, uint(id), item.Photos); err != nil {
+			return fmt.Errorf("error saving photos: %w", err)
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -115,10 +115,21 @@ func (repo *itemRepository) GetItemByID(ctx context.Context, id uint) (*domain.I
 		}
 	}
 
-	return repo.unmarshalItem(item), nil
+	photos := []Photo{}
+	err = repo.conn.Select(&photos, "SELECT * FROM photos WHERE item_id=?", id)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			break
+		default:
+			return nil, fmt.Errorf("error getting photos: %w", err)
+		}
+	}
+
+	return repo.unmarshalItem(item, photos), nil
 }
 
-func (r *itemRepository) unmarshalItem(item *Item) *domain.Item {
+func (r *itemRepository) unmarshalItem(item *Item, photos []Photo) *domain.Item {
 	itemModel := domain.Item{
 		ID:          item.ID,
 		Code:        item.Code,
@@ -134,7 +145,7 @@ func (r *itemRepository) unmarshalItem(item *Item) *domain.Item {
 		UpdatedAt:   item.UpdatedAt,
 	}
 
-	for _, photo := range item.Photos {
+	for _, photo := range photos {
 		itemModel.Photos = append(itemModel.Photos, domain.Photo{Path: photo.Path})
 	}
 

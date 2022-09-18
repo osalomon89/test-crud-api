@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"encoding/json"
@@ -10,20 +10,14 @@ import (
 	"github.com/mercadolibre/fury_go-core/pkg/web"
 	"github.com/osalomon89/test-crud-api/internal/core/domain"
 	"github.com/osalomon89/test-crud-api/internal/core/ports"
-	"github.com/osalomon89/test-crud-api/internal/infrastructure/server/handler/dto"
 	marketcontext "github.com/osalomon89/test-crud-api/pkg/context"
 )
-
-type ItemHandler interface {
-	CreateItem(res http.ResponseWriter, req *http.Request) error
-	GetItemByID(res http.ResponseWriter, req *http.Request) error
-}
 
 type itemHandler struct {
 	itemService ports.ItemService
 }
 
-func NewItemHandler(itemService ports.ItemService) (ItemHandler, error) {
+func newItemHandler(itemService ports.ItemService) (*itemHandler, error) {
 	if itemService == nil {
 		return nil, fmt.Errorf("service cannot be nil")
 	}
@@ -38,11 +32,11 @@ func (h *itemHandler) CreateItem(res http.ResponseWriter, req *http.Request) err
 	logger := marketcontext.Logger(ctx)
 	logger.Debug(h, nil, "Entering ItemHandler CreateItem()")
 
-	var itemBody dto.ItemBody
+	var itemBody ItemBody
 	if err := json.NewDecoder(req.Body).Decode(&itemBody); err != nil {
 		logger.Error(h, nil, err, "error validating request body")
 
-		message := dto.Response{
+		message := Response{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 			Data:    nil,
@@ -51,7 +45,7 @@ func (h *itemHandler) CreateItem(res http.ResponseWriter, req *http.Request) err
 		return web.EncodeJSON(res, message, http.StatusBadRequest)
 	}
 
-	item, err := h.itemService.CreateItem(ctx, itemBody.ToItemDomain())
+	item, err := h.itemService.CreateItem(ctx, itemBody.toItemDomain())
 	if err != nil {
 		logger.Error(h, nil, err, "error creating item")
 		var errorMsg string
@@ -66,7 +60,7 @@ func (h *itemHandler) CreateItem(res http.ResponseWriter, req *http.Request) err
 			errorMsg = err.Error()
 		}
 
-		message := dto.Response{
+		message := Response{
 			Status:  httpStatus,
 			Message: errorMsg,
 			Data:    nil,
@@ -75,10 +69,13 @@ func (h *itemHandler) CreateItem(res http.ResponseWriter, req *http.Request) err
 		return web.EncodeJSON(res, message, httpStatus)
 	}
 
-	return web.EncodeJSON(res, dto.Response{
+	var itemResponse *ItemResponse = &ItemResponse{}
+	itemResponse.fromItemDomain(item)
+
+	return web.EncodeJSON(res, Response{
 		Status:  http.StatusCreated,
 		Message: "Success",
-		Data:    dto.CreateItemResponse(item),
+		Data:    itemResponse,
 	}, http.StatusCreated)
 }
 
@@ -91,7 +88,7 @@ func (h *itemHandler) GetItemByID(res http.ResponseWriter, req *http.Request) er
 	if err != nil || id <= 0 {
 		logger.Error(h, nil, err, "error validating request param")
 
-		return web.EncodeJSON(res, dto.Response{
+		return web.EncodeJSON(res, Response{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 			Data:    nil,
@@ -113,16 +110,19 @@ func (h *itemHandler) GetItemByID(res http.ResponseWriter, req *http.Request) er
 			errorMsg = err.Error()
 		}
 
-		return web.EncodeJSON(res, dto.Response{
+		return web.EncodeJSON(res, Response{
 			Status:  httpStatus,
 			Message: errorMsg,
 			Data:    nil,
 		}, httpStatus)
 	}
 
-	return web.EncodeJSON(res, dto.Response{
+	var itemResponse *ItemResponse = &ItemResponse{}
+	itemResponse.fromItemDomain(item)
+
+	return web.EncodeJSON(res, Response{
 		Status:  http.StatusOK,
 		Message: "Success",
-		Data:    dto.CreateItemResponse(item),
+		Data:    itemResponse,
 	}, http.StatusOK)
 }

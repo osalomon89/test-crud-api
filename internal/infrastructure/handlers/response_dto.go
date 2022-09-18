@@ -1,4 +1,4 @@
-package dto
+package handlers
 
 import (
 	"time"
@@ -28,27 +28,25 @@ type ItemResponse struct {
 	UpdatedAt   time.Time
 }
 
-func CreateItemResponse(item *domain.Item) *ItemResponse {
+func (itemResponse *ItemResponse) fromItemDomain(item *domain.Item) {
 	var photos []string
 	for _, photo := range item.Photos {
 		photos = append(photos, photo.Path)
 	}
 
-	return &ItemResponse{
-		ID:          item.ID,
-		Code:        item.Code,
-		Title:       item.Title,
-		Description: item.Description,
-		Price:       item.Price,
-		Stock:       item.Stock,
-		ItemType:    item.ItemType,
-		Leader:      item.Leader,
-		LeaderLevel: item.LeaderLevel,
-		Status:      item.Status,
-		Photos:      photos,
-		CreatedAt:   item.CreatedAt,
-		UpdatedAt:   item.UpdatedAt,
-	}
+	itemResponse.ID = item.ID
+	itemResponse.Code = item.Code
+	itemResponse.Title = item.Title
+	itemResponse.Description = item.Description
+	itemResponse.Price = item.Price
+	itemResponse.Stock = item.Stock
+	itemResponse.ItemType = item.ItemType
+	itemResponse.Leader = item.Leader
+	itemResponse.LeaderLevel = item.LeaderLevel
+	itemResponse.Status = item.Status
+	itemResponse.Photos = photos
+	itemResponse.CreatedAt = item.CreatedAt
+	itemResponse.UpdatedAt = item.UpdatedAt
 }
 
 type ErrorResponse struct {
