@@ -37,12 +37,12 @@ func run() error {
 		return fmt.Errorf("error creating item service: %w", err)
 	}
 
-	httpServer, err := handlers.NewHTTPServer(app, itemService)
+	itemHandler, err := handlers.NewItemHandler(itemService)
 	if err != nil {
-		return fmt.Errorf("error creating server: %w", err)
+		return fmt.Errorf("error creating handler: %w", err)
 	}
 
-	httpServer.SetupRouter()
+	setupRouter(app, itemHandler)
 
-	return httpServer.Run()
+	return app.Run()
 }

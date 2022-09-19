@@ -13,11 +13,16 @@ import (
 	marketcontext "github.com/osalomon89/test-crud-api/pkg/context"
 )
 
+type ItemHandler interface {
+	CreateItem(res http.ResponseWriter, req *http.Request) error
+	GetItemByID(res http.ResponseWriter, req *http.Request) error
+}
+
 type itemHandler struct {
 	itemService ports.ItemService
 }
 
-func newItemHandler(itemService ports.ItemService) (*itemHandler, error) {
+func NewItemHandler(itemService ports.ItemService) (ItemHandler, error) {
 	if itemService == nil {
 		return nil, fmt.Errorf("service cannot be nil")
 	}

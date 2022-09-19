@@ -126,10 +126,10 @@ func (repo *itemRepository) GetItemByID(ctx context.Context, id uint) (*domain.I
 		}
 	}
 
-	return repo.unmarshalItem(item, photos), nil
+	return item.toItemDomain(photos), nil
 }
 
-func (r *itemRepository) unmarshalItem(item *Item, photos []Photo) *domain.Item {
+func (item *Item) toItemDomain(photos []Photo) *domain.Item {
 	itemModel := domain.Item{
 		ID:          item.ID,
 		Code:        item.Code,
