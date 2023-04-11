@@ -30,7 +30,7 @@ func load(env string) error {
 			return err
 		} else {
 			environment = map[string]string{
-				dbHost: gomelipass.GetEnv("DB_MYSQL_DESAENV07_TESTMARKET_TESTMARKET_ENDPOINT"),
+				dbHost: gomelipass.GetEnv(cfg.GetString("db-host", defaultString)),
 				dbUser: cfg.GetString(dbUser, defaultString),
 				dbPass: gomelipass.GetEnv("DB_MYSQL_DESAENV07_TESTMARKET_TESTMARKET_WPROD"),
 				dbName: cfg.GetString(dbName, defaultString),

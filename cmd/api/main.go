@@ -3,46 +3,27 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
-	"github.com/mercadolibre/fury_go-platform/pkg/fury"
-	"github.com/osalomon89/test-crud-api/internal/core/services"
-	"github.com/osalomon89/test-crud-api/internal/infrastructure/handlers"
-	"github.com/osalomon89/test-crud-api/internal/infrastructure/repositories/mysql"
+	"github.com/osalomon89/test-crud-api/cmd/api/app"
+	"github.com/osalomon89/test-crud-api/internal/platform/environment"
 )
 
 func main() {
-	if err := run(); err != nil {
-		log.Fatal(err)
-	}
-}
+	env := environment.GetFromString(os.Getenv("GO_ENVIRONMENT"))
 
-func run() error {
-	app, err := fury.NewWebApplication()
+	dependencies, err := app.BuildDependencies(env)
 	if err != nil {
-		return err
+		log.Fatal("error at dependencies building", err)
 	}
 
-	conn, err := mysql.GetConnectionDB()
-	if err != nil {
-		return fmt.Errorf("error connecting to DB: %w", err)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
 
-	itemRepository, err := mysql.NewItemRepository(conn)
-	if err != nil {
-		return fmt.Errorf("error creating item repository: %w", err)
+	app := app.Build(dependencies)
+	if err := app.Run(fmt.Sprintf(":%s", port)); err != nil {
+		log.Fatal("error at furyapp startup", err)
 	}
-
-	itemService, err := services.NewItemService(itemRepository)
-	if err != nil {
-		return fmt.Errorf("error creating item service: %w", err)
-	}
-
-	itemHandler, err := handlers.NewItemHandler(itemService)
-	if err != nil {
-		return fmt.Errorf("error creating handler: %w", err)
-	}
-
-	setupRouter(app, itemHandler)
-
-	return app.Run()
 }

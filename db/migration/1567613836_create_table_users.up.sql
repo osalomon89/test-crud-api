@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS users (
+  id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  email VARCHAR(100) NOT NULL,
+  password VARCHAR(100) NOT NULL,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL,
+  PRIMARY KEY (id));

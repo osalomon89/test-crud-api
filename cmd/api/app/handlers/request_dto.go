@@ -1,8 +1,10 @@
 package handlers
 
-import "github.com/osalomon89/test-crud-api/internal/core/domain"
+import (
+	"github.com/osalomon89/test-crud-api/internal/market/item"
+)
 
-type ItemBody struct {
+type itemRequest struct {
 	Code        string   `json:"code" binding:"required"`
 	Title       string   `json:"title" binding:"required"`
 	Description string   `json:"description" binding:"required"`
@@ -14,14 +16,8 @@ type ItemBody struct {
 	Photos      []string `json:"photos" binding:"required"`
 }
 
-func (itemBody ItemBody) toItemDomain() domain.Item {
-	var photos []domain.Photo
-
-	for _, path := range itemBody.Photos {
-		photos = append(photos, domain.Photo{Path: path})
-	}
-
-	return domain.Item{
+func (itemBody itemRequest) toItemDomain() item.Item {
+	return item.Item{
 		Code:        itemBody.Code,
 		Title:       itemBody.Title,
 		Description: itemBody.Description,
@@ -30,6 +26,6 @@ func (itemBody ItemBody) toItemDomain() domain.Item {
 		ItemType:    itemBody.ItemType,
 		Leader:      itemBody.Leader,
 		LeaderLevel: itemBody.LeaderLevel,
-		Photos:      photos,
+		Photos:      itemBody.Photos,
 	}
 }
