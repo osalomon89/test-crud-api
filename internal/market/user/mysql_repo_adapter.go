@@ -5,27 +5,18 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
 	"github.com/osalomon89/test-crud-api/internal/market/item"
+	mysqldb "github.com/osalomon89/test-crud-api/internal/platform/mysql"
 	marketcontext "github.com/osalomon89/test-crud-api/pkg/context"
 )
 
-type userDAO struct {
-	ID        uint
-	Email     string
-	Password  string
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-}
-
 type userRepository struct {
-	db *sqlx.DB
+	db *mysqldb.MySQLDB
 }
 
-func NewUserRepository(db *sqlx.DB) (Repository, error) {
+func NewUserRepository(db *mysqldb.MySQLDB) (Repository, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database can not be nil")
 	}
@@ -34,12 +25,12 @@ func NewUserRepository(db *sqlx.DB) (Repository, error) {
 }
 
 func (repo *userRepository) Save(ctx context.Context, user *User) error {
-	createdAt := time.Now()
+	userDao := mysqldb.UserDAO{
+		Email:    user.Email,
+		Password: user.Password,
+	}
 
-	result, err := repo.db.Exec(`INSERT INTO users (email, password, created_at, updated_at) 
-	VALUES(?,?,?,?)`, user.Email, user.Password, createdAt, createdAt)
-
-	if err != nil {
+	if err := repo.db.SaveUser(ctx, &userDao); err != nil {
 		var mysqlErr *mysql.MySQLError
 		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
 			return UserError{
@@ -50,25 +41,18 @@ func (repo *userRepository) Save(ctx context.Context, user *User) error {
 		return fmt.Errorf("error saving user: %w", err)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return fmt.Errorf("error saving user: %w", err)
-	}
-
-	user.ID = uint(id)
-	user.CreatedAt = createdAt
-	user.UpdatedAt = createdAt
+	user.ID = userDao.ID
+	user.CreatedAt = userDao.CreatedAt
+	user.UpdatedAt = userDao.UpdatedAt
 
 	return nil
 }
 
 func (repo *userRepository) GetByEmail(ctx context.Context, email string) (*User, error) {
-	user := new(userDAO)
-
 	logger := marketcontext.Logger(ctx)
 	logger.Debug(repo, nil, "Entering UserRepository. GetByEmail()")
 
-	err := repo.db.Get(user, "SELECT * FROM users WHERE email=?", email)
+	userDao, err := repo.db.GetUserByEmail(ctx, email)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -81,21 +65,19 @@ func (repo *userRepository) GetByEmail(ctx context.Context, email string) (*User
 	}
 
 	return &User{
-		ID:        user.ID,
-		Email:     user.Email,
-		Password:  user.Password,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		ID:        userDao.ID,
+		Email:     userDao.Email,
+		Password:  userDao.Password,
+		CreatedAt: userDao.CreatedAt,
+		UpdatedAt: userDao.UpdatedAt,
 	}, nil
 }
 
 func (repo *userRepository) SaveItem(ctx context.Context, itemID, userID uint) error {
-	createdAt := time.Now()
+	logger := marketcontext.Logger(ctx)
+	logger.Debug(repo, nil, "Entering UserRepository. SaveItem()")
 
-	_, err := repo.db.Exec(`INSERT INTO user_items (user_id, item_id, created_at, updated_at) 
-	VALUES(?,?,?,?)`, itemID, userID, createdAt, createdAt)
-
-	if err != nil {
+	if err := repo.db.SaveItemByUser(ctx, itemID, userID); err != nil {
 		return fmt.Errorf("error saving item: %w", err)
 	}
 
@@ -105,9 +87,7 @@ func (repo *userRepository) SaveItem(ctx context.Context, itemID, userID uint) e
 func (repo *userRepository) GetItems(ctx context.Context, userID uint) (*Items, error) {
 	var items []item.Item
 
-	err := repo.db.Select(&items, `SELECT * FROM items 
-	INNER JOIN user_items ON items.id = user_items.item_id 
-	WHERE user_items.user_id=?`, userID)
+	itemsDao, err := repo.db.GetItemsByUser(ctx, userID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
@@ -117,6 +97,10 @@ func (repo *userRepository) GetItems(ctx context.Context, userID uint) (*Items, 
 		default:
 			return nil, fmt.Errorf("error getting user: %w", err)
 		}
+	}
+
+	for _, it := range itemsDao {
+		items = append(items, *item.ToItemDomain(&it))
 	}
 
 	return &Items{

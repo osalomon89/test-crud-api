@@ -20,18 +20,23 @@ type Dependencies struct {
 func BuildDependencies(env environment.Environment) (*Dependencies, error) {
 	switch env {
 	case environment.Development:
-		mysqlDb, err := mysql.GetConnectionDB()
+		mysqlConn, err := mysql.GetConnectionDB()
 		if err != nil {
 			return nil, fmt.Errorf("error connecting to DB: %w", err)
+		}
+
+		mysqlDB, err := mysql.NewMySQLDB(mysqlConn)
+		if err != nil {
+			return nil, fmt.Errorf("error creating adapter to DB: %w", err)
 		}
 
 		// infra adapters
-		itemRepo, err := item.NewItemRepository(mysqlDb)
+		itemRepo, err := item.NewItemRepository(mysqlDB)
 		if err != nil {
 			return nil, fmt.Errorf("error connecting to DB: %w", err)
 		}
 
-		userRepo, err := user.NewUserRepository(mysqlDb)
+		userRepo, err := user.NewUserRepository(mysqlDB)
 		if err != nil {
 			return nil, fmt.Errorf("error connecting to DB: %w", err)
 		}
